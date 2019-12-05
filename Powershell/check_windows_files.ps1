@@ -19,7 +19,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 [int]$exitCode = 2
 [string]$exitMessage = "CRITICAL: something wicked happened"
-[decimal]$version = 0.5
+[decimal]$version = 1.0
 
 function sanitizePath {
     #TODO: Need to figure out how to sanitize a path in Powershell.
