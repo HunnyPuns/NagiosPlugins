@@ -1,8 +1,9 @@
 ﻿param (
     [Parameter(Mandatory=$true)][string]$checkPath,
+    #[Parameter(Mandatory=$false)][switch]$verbose,
 
     [Parameter(Mandatory=$false,ParameterSetName='exists')][switch]$exists,
-    [Parameter(Mandatory=$false,ParameterSetName='exists')][bool]$shouldexist,
+    [Parameter(Mandatory=$false,ParameterSetName='exists')][switch]$shouldnotexist,
 
     [Parameter(Mandatory=$false,ParameterSetName='size')][switch]$size,
     [Parameter(Mandatory=$false,ParameterSetName='size')][int]$sizewarning,
@@ -19,7 +20,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 [int]$exitCode = 2
 [string]$exitMessage = "CRITICAL: something wicked happened"
-[decimal]$version = 1.0
+[decimal]$version = 1.1
 
 function sanitizePath {
     #TODO: Need to figure out how to sanitize a path in Powershell.
@@ -109,18 +110,31 @@ function processCheck {
 
 if ($exists -eq $true) {
     #Check if a specific file or directory exists
+    #exists does not get run through the processCheck function as the variables
+    #don't line up as well as the other two checks.
     if (checkFileExists -Path $checkPath) {
-        $exitMessage = "OK: I found the file $checkPath!"
-        $exitCode = 0
+        if ($shouldnotexist -eq $true) {
+            $exitMessage = "CRITICAL: I found the file $checkPath, and it shouldn't exist!"
+            $exitCode = 2
+        }
+        else {
+            $exitMessage = "OK: I found the file $checkPath."
+            $exitCode = 0
+        }
     }
     else {
-        $exitMessage = "CRITICAL: I did not find the file, $checkPath"
-        $exitCode = 2
+        if ($shouldnotexist -eq $true) {
+            $exitMessage = "OK: I did not find the file $checkpath, and it shouldn't exist."
+            $exitCode = 0
+        }
+        else {
+            $exitMessage = "CRITICAL: I did not find the file, $checkPath"
+            $exitCode = 2
+        }
     }
 }
 elseif ($size -eq $true) {
     #Check the size of a specific file
-    #Write-Output (checkFileSize -Path $checkPath)
 
     $cimObj = Get-CimInstance -ClassName CIM_LogicalFile `
             -Filter "Name='$checkPath'" `
@@ -160,7 +174,8 @@ elseif ($number -eq $true) {
                         -warningThresh $numwarning `
                         -criticalThresh $numcritical `
                         -returnMessage "Number of files is $numFiles"
-
+        
+        #Come back to this and find out why an array with 2 elements isn't starting from 0
         $exitCode = $processArray[1]
         $exitMessage = $processArray[2]
     }
