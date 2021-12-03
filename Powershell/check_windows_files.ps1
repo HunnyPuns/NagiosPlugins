@@ -20,7 +20,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 [int]$exitCode = 2
 [string]$exitMessage = "CRITICAL: something wicked happened"
-[decimal]$version = 1.1
+[decimal]$version = 1.2
 
 function sanitizePath {
     #TODO: Need to figure out how to sanitize a path in Powershell.
@@ -149,7 +149,7 @@ elseif ($size -eq $true) {
         $processArray = processCheck -checkResult $cimObj.FileSize `
                      -warningThresh $sizeWarning `
                      -criticalThresh $sizeCritical `
-                     -returnMessage "File size is $($cimObj.FileSize)"
+                     -returnMessage "File size is $($cimObj.FileSize) | 'File Size'=$($cimObj.FileSize);$sizeWarning;$sizeCritical"
         
         #Come back to this and find out why an array with 2 elements isn't starting from 0
         $exitCode = $processArray[1]
@@ -165,7 +165,7 @@ elseif ($number -eq $true) {
             -KeyOnly `
             -Namespace root\cimv2).FileType -ne "File Folder") {
 
-        Write-Outpute "The path specified is not a directory."
+        Write-Output "The path specified is not a directory."
 
     }
     else {
@@ -173,7 +173,7 @@ elseif ($number -eq $true) {
         $processArray = processCheck -checkResult $numFiles `
                         -warningThresh $numwarning `
                         -criticalThresh $numcritical `
-                        -returnMessage "Number of files is $numFiles"
+                        -returnMessage "Number of files is $numFiles | 'Number of Files'=$numFiles;$numwarning;$numcritical"
         
         #Come back to this and find out why an array with 2 elements isn't starting from 0
         $exitCode = $processArray[1]
